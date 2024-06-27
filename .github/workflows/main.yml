@@ -1,0 +1,42 @@
+name: Deployment Demo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install OpenVPN
+      run: sudo apt-get install -y openvpn
+
+    - name: Setup OpenVPN
+      env:
+        VPN_USERNAME: ${{ secrets.VPN_USERNAME }}
+        VPN_PASSWORD: ${{ secrets.VPN_PASSWORD }}
+      run: |
+        echo -e "${{ secrets.VPN_USERNAME }}\n${{ secrets.VPN_PASSWORD }}" > vpn_auth.txt
+        sudo openvpn --config path_to_your_vpn_config_file.ovpn --auth-user-pass vpn_auth.txt &
+
+    - name: Wait for VPN to establish
+      run: sleep 30
+
+    - name: Add SSH key
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+
+    - name: Copy files to EC2
+      run: |
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ YOUR_EC2_USER@${{ secrets.EC2_HOST }}:/var/www/html/Demo
+
+    - name: Cleanup
+      run: |
+        rm vpn_auth.txt
+        sudo killall openvpn
