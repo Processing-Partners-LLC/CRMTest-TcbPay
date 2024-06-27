@@ -34,7 +34,7 @@ jobs:
 
     - name: Copy files to EC2
       run: |
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ YOUR_EC2_USER@${{ secrets.EC2_HOST }}:/var/www/html/Demo
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ centos@${{ secrets.EC2_HOST }}:/var/www/html/Demo
 
     - name: Cleanup
       run: |
