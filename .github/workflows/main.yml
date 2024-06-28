@@ -16,13 +16,16 @@ jobs:
     - name: Install OpenVPN
       run: sudo apt-get install -y openvpn
 
-    - name: Setup OpenVPN
+   name: Setup OpenVPN
       env:
+        VPN_CONFIG: ${{ secrets.VPN_CONFIG }}
         VPN_USERNAME: ${{ secrets.VPN_USERNAME }}
         VPN_PASSWORD: ${{ secrets.VPN_PASSWORD }}
-      run: |
-        echo -e "${{ secrets.VPN_USERNAME }}\n${{ secrets.VPN_PASSWORD }}" > vpn_auth.txt
-        sudo openvpn --config path_to_your_vpn_config_file.ovpn --auth-user-pass vpn_auth.txt &
+
+        run: |
+        echo "${VPN_CONFIG}" > vpn_config.ovpn
+        echo -e "${VPN_USERNAME}\n${VPN_PASSWORD}" > vpn_auth.txt
+        sudo openvpn --config vpn_config.ovpn --auth-user-pass vpn_auth.txt &
 
     - name: Wait for VPN to establish
       run: sleep 30
