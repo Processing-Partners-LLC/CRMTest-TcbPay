@@ -16,23 +16,18 @@ jobs:
     - name: Install OpenVPN
       run: sudo apt-get install -y openvpn
 
-   name: Setup OpenVPN
+    - name: Setup OpenVPN
       env:
         VPN_CONFIG: ${{ secrets.VPN_CONFIG }}
         VPN_USERNAME: ${{ secrets.VPN_USERNAME }}
         VPN_PASSWORD: ${{ secrets.VPN_PASSWORD }}
-
-        run: |
+      run: |
         echo "${VPN_CONFIG}" > vpn_config.ovpn
         echo -e "${VPN_USERNAME}\n${VPN_PASSWORD}" > vpn_auth.txt
         sudo openvpn --config vpn_config.ovpn --auth-user-pass vpn_auth.txt &
-
+    
     - name: Wait for VPN to establish
       run: sleep 30
-
-    - name: Verify VPN Connection
-      run: ip a
-
 
     - name: Add SSH key
       uses: webfactory/ssh-agent@v0.5.3
