@@ -27,6 +27,10 @@ jobs:
     - name: Wait for VPN to establish
       run: sleep 30
 
+    - name: Verify VPN Connection
+      run: ip a
+
+
     - name: Add SSH key
       uses: webfactory/ssh-agent@v0.5.3
       with:
