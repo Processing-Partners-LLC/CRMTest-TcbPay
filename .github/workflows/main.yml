@@ -13,8 +13,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install OpenVPN
-      run: sudo apt-get install -y openvpn
+    - name: Update and install OpenVPN
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y openvpn
 
     - name: Setup OpenVPN
       env:
@@ -25,21 +27,29 @@ jobs:
         echo "${VPN_CONFIG}" > vpn_config.ovpn
         echo -e "${VPN_USERNAME}\n${VPN_PASSWORD}" > vpn_auth.txt
         sudo openvpn --config vpn_config.ovpn --auth-user-pass vpn_auth.txt &
-    
-    - name: Wait for VPN to establish
-      run: sleep 30
+        sleep 30
 
-    - name: Check VPN connection
+    - name: Verify VPN connection
+      id: vpn_check
       run: |
-        ifconfig
-        ping -c 4 ${{ secrets.EC2_HOST }}
+        if curl --silent --max-time 10 http://api.ipify.org/; then
+          echo "VPN connection established."
+        else
+          echo "VPN connection failed."
+          exit 1
+        fi
 
     - name: Add SSH key
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
 
+    - name: Ensure destination directory exists on EC2
+      if: success() && steps.vpn_check.outcome == 'success'
+      run: ssh -o StrictHostKeyChecking=no centos@${{ secrets.EC2_HOST }} "mkdir -p /var/www/html/Demo"
+
     - name: Copy files to EC2
+      if: success() && steps.vpn_check.outcome == 'success'
       run: |
         rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ centos@${{ secrets.EC2_HOST }}:/var/www/html/Demo
 
