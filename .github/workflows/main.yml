@@ -32,7 +32,7 @@ jobs:
     - name: Verify VPN connection
       id: vpn_check
       run: |
-        if ping -c 4 ${{ secrets.BASTION_HOST }}; then
+        if curl --silent --max-time 10 http://api.ipify.org/; then
           echo "VPN connection established."
         else
           echo "VPN connection failed."
@@ -44,13 +44,20 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.BASTION_SSH_KEY }}
 
-    - name: Transfer code to Bastion host
+    - name: Connect to Bastion host and set up EC2 SSH key
+      if: success() && steps.vpn_check.outcome == 'success'
       run: |
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:~/deployment_code
+        ssh -o StrictHostKeyChecking=no ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }} "echo '${{ secrets.EC2_SSH_KEY }}' > ~/ec2_key.pem && chmod 600 ~/ec2_key.pem"
 
-    - name: Trigger deployment script on Bastion host
+    - name: Ensure destination directory exists on EC2 via Bastion
+      if: success() && steps.vpn_check.outcome == 'success'
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }} "C:/Users/<YourUser>/deployment_code/deploy_to_ec2.bat ${{ secrets.EC2_HOST }}"
+        ssh -o StrictHostKeyChecking=no -i ~/ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p /var/www/html/Demo"
+
+    - name: Copy files to EC2 via Bastion
+      if: success() && steps.vpn_check.outcome == 'success'
+      run: |
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ~/ec2_key.pem" ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/Demo
 
     - name: Cleanup
       run: |
