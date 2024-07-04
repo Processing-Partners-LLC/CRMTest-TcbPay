@@ -44,9 +44,12 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.BASTION_SSH_KEY }}
 
-   - name: Connect to Bastion host and set up EC2 SSH key
+    - name: Connect to Bastion host and set up EC2 SSH key
       run: |
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/ec2_key.pem
+        chmod 600 ~/ec2_key.pem
         ssh -vvv -o StrictHostKeyChecking=no -i ~/bastion_key.pem ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }} "echo '${{ secrets.EC2_SSH_KEY }}' > ~/ec2_key.pem && chmod 600 ~/ec2_key.pem"
+
     - name: Ensure destination directory exists on EC2 via Bastion
       if: success() && steps.vpn_check.outcome == 'success'
       run: |
