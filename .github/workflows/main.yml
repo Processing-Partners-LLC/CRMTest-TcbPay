@@ -28,7 +28,7 @@ jobs:
 
       - name: Connect to Bastion and deploy
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/INTERN-pem.pem -o "ProxyCommand ssh -o StrictHostKeyChecking=no -W %h:%p -i ~/.ssh/INTERN-pem.pem ${BASTION_USERNAME}@${BASTION_PRIVATE_IP}" centos@${{ secrets.EC2_PRIVATE_IP }} 'bash -s' < /home/admin/deployment-scripts/your-deployment-script.sh
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/INTERN-pem.pem -o "ProxyCommand ssh -o StrictHostKeyChecking=no -W %h:%p -i ~/.ssh/INTERN-pem.pem ${{ secrets.BASTION_USERNAME }}@${{ secrets.BASTION_PRIVATE_IP }}" centos@${{ secrets.EC2_PRIVATE_IP }} 'bash -s' < /home/admin/deployment-scripts/your-deployment-script.sh
 
       env:
         BASTION_USERNAME: ${{ secrets.BASTION_USERNAME }}
