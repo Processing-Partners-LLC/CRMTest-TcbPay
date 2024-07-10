@@ -1,4 +1,4 @@
-name: Deploy to EC2 Demo
+name: Deploy
 
 on:
   push:
@@ -8,28 +8,11 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up SSH
+      - name: Run deployment script
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_PEM_KEY }}" > ~/.ssh/INTERN-pem.pem
-          chmod 600 ~/.ssh/INTERN-pem.pem
-
-      - name: Connect to VPN
-        run: |
-          sudo openvpn --config /home/admin/deployment-scripts/config.ovpn --auth-user-pass <(echo -e "${{ secrets.VPN_USERNAME }}\n${{ secrets.VPN_PASSWORD }}") &
-        continue-on-error: true
-
-      - name: Wait for VPN to connect
-        run: sleep 30
-
-      - name: Connect to Bastion and deploy
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/INTERN-pem.pem -o "ProxyCommand ssh -o StrictHostKeyChecking=no -W %h:%p -i ~/.ssh/INTERN-pem.pem ${{ secrets.BASTION_USERNAME }}@${{ secrets.BASTION_PRIVATE_IP }}" centos@${{ secrets.EC2_PRIVATE_IP }} 'bash -s' < /home/admin/deployment-scripts/your-deployment-script.sh
-
-    env:
-      BASTION_USERNAME: ${{ secrets.BASTION_USERNAME }}
-      BASTION_PRIVATE_IP: ${{ secrets.BASTION_PRIVATE_IP }}
+          /home/ubuntu/deployment-scripts/deploy-code.sh
