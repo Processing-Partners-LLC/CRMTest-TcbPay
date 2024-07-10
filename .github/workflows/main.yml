@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy Code
 
 on:
   push:
@@ -8,11 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Run deployment script
-        run: |
-          /home/runner/deployment-scripts/deploy-code.sh
+        run: /home/runner/deployment-scripts/deploy-code.sh
+        shell: /usr/bin/bash -e {0}
