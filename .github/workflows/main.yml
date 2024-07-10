@@ -15,4 +15,4 @@ jobs:
 
       - name: Run deployment script
         run: |
-          /home/ubuntu/deployment-scripts/deploy-code.sh
+          /home/runner/deployment-scripts/deploy-code.sh
