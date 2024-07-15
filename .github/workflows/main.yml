@@ -1,4 +1,4 @@
-name: Deploy Code
+name: CI/CD Pipeline Demo
 
 on:
   push:
@@ -8,7 +8,16 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+
     steps:
-      - name: Run deployment script
-        run: /home/runner/deployment-scripts/deploy-code.sh
-        shell: /usr/bin/bash -e {0}
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up VPN
+      run: sudo /home/runner/deployment-scripts/connect-vpn.sh
+
+    - name: Establish SSH Tunnel
+      run: sudo /home/runner/deployment-scripts/connect-tunnel.sh
+
+    - name: Deploy code
+      run: sudo /home/runner/deployment-scripts/deploy-code.sh
