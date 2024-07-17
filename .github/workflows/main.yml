@@ -1,6 +1,7 @@
-name: CI/CD Pipeline Demo
+name: CI/CD PipelineDemo
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -13,11 +14,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up VPN
-      run: sudo /home/runner/deployment-scripts/connect-vpn.sh
+    - name: Pause for Manual VPN Connection
+      run: |
+        echo "Please run the VPN connection script manually:"
+        echo "sudo /home/runner/deployment-scripts/connect-vpn.sh"
+        read -p "Press Enter to continue after connecting VPN..."
 
-    - name: Establish SSH Tunnel
-      run: sudo /home/runner/deployment-scripts/connect-tunnel.sh
+    - name: Pause for Manual SSH Tunnel
+      run: |
+        echo "Please establish the SSH tunnel manually:"
+        echo "sudo /home/runner/deployment-scripts/connect-bastion.sh"
+        read -p "Press Enter to continue after establishing the tunnel..."
 
     - name: Deploy code
       run: sudo /home/runner/deployment-scripts/deploy-code.sh
