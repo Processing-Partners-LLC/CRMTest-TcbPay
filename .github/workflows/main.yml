@@ -1,4 +1,4 @@
-name: CI/CD PipelineDemo
+name: CI/CD Pipeline
 
 on:
   workflow_dispatch:
@@ -18,13 +18,33 @@ jobs:
       run: |
         echo "Please run the VPN connection script manually:"
         echo "sudo /home/runner/deployment-scripts/connect-vpn.sh"
-        read -p "Press Enter to continue after connecting VPN..."
+        echo "Waiting for VPN connection..."
+        sleep 30
+
+    - name: Verify VPN Connection
+      run: |
+        if ! curl -s --connect-timeout 10 http://192.168.0.23:80 >/dev/null; then
+          echo "VPN connection not established. Exiting."
+          exit 1
+        else
+          echo "VPN connection established."
+        fi
 
     - name: Pause for Manual SSH Tunnel
       run: |
         echo "Please establish the SSH tunnel manually:"
         echo "sudo /home/runner/deployment-scripts/connect-bastion.sh"
-        read -p "Press Enter to continue after establishing the tunnel..."
+        echo "Waiting for SSH tunnel..."
+        sleep 30
+
+    - name: Verify SSH Tunnel
+      run: |
+        if ! ssh -o StrictHostKeyChecking=no -i /home/runner/deployment-scripts/INTERN-pem.pem centos@192.168.0.23 'exit'; then
+          echo "SSH tunnel not established. Exiting."
+          exit 1
+        else
+          echo "SSH tunnel established."
+        fi
 
     - name: Deploy code
       run: sudo /home/runner/deployment-scripts/deploy-code.sh
