@@ -17,33 +17,36 @@ jobs:
     - name: Pause for Manual VPN Connection
       run: |
         echo "Please run the VPN connection script manually:"
-        echo "sudo /home/runner/deployment-scripts/connect-vpn.sh"
-        echo "Waiting for VPN connection..."
-        sleep 30
+        echo "Run this command in your runner instance: sudo /home/runner/deployment-scripts/connect-vpn.sh"
+        read -p "Press Enter to continue after connecting VPN..."
 
-    - name: Verify VPN Connection
+    - name: Verify VPN Connection to Bastion Host
       run: |
-        if ! curl -s --connect-timeout 10 http://192.168.0.23:80 >/dev/null; then
-          echo "VPN connection not established. Exiting."
+        echo "Verifying VPN connection to Bastion host..."
+        if ! ping -c 4 10.10.1.60 >/dev/null; then
+          echo "VPN connection to Bastion host not established. Exiting."
+          echo "Network information for debugging:"
+          ip addr show
+          ip route show
           exit 1
         else
-          echo "VPN connection established."
+          echo "VPN connection to Bastion host established."
         fi
 
     - name: Pause for Manual SSH Tunnel
       run: |
         echo "Please establish the SSH tunnel manually:"
-        echo "sudo /home/runner/deployment-scripts/connect-bastion.sh"
-        echo "Waiting for SSH tunnel..."
-        sleep 30
+        echo "Run this command in your runner instance: sudo /home/runner/deployment-scripts/connect-bastion.sh"
+        read -p "Press Enter to continue after establishing the SSH tunnel..."
 
-    - name: Verify SSH Tunnel
+    - name: Verify SSH Tunnel to EC2
       run: |
+        echo "Verifying SSH tunnel to EC2 instance..."
         if ! ssh -o StrictHostKeyChecking=no -i /home/runner/deployment-scripts/INTERN-pem.pem centos@192.168.0.23 'exit'; then
-          echo "SSH tunnel not established. Exiting."
+          echo "SSH tunnel to EC2 instance not established. Exiting."
           exit 1
         else
-          echo "SSH tunnel established."
+          echo "SSH tunnel to EC2 instance established."
         fi
 
     - name: Deploy code
