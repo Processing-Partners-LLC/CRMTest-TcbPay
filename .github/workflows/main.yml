@@ -1,7 +1,6 @@
-name: CI/CD Pipeline
+name: Deploy
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -9,14 +8,18 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Verify VPN Connection to Bastion Host
+    - name: Run VPN connection script manually
       run: |
-        echo "Verifying VPN connection to Bastion host..."
+        echo "Please run the VPN connection script manually:"
+        echo "Run this command in your runner instance: sudo /home/runner/deployment-scripts/connect-vpn.sh"
+        read -p "Press Enter to continue after connecting VPN..."
+    
+    - name: Verifying VPN connection to Bastion host
+      run: |
         if ! ping -c 4 10.10.1.60 >/dev/null; then
           echo "VPN connection to Bastion host not established. Exiting."
           echo "Network information for debugging:"
@@ -27,21 +30,8 @@ jobs:
           echo "VPN connection to Bastion host established."
         fi
 
-    - name: Establish SSH Tunnel to Bastion Host
+    - name: SSH into EC2 instance through Bastion Host
       run: |
-        echo "Establishing SSH tunnel to Bastion host..."
-        ssh -i /home/runner/deployment-scripts/INTERN-pem.pem -o StrictHostKeyChecking=no -L 22:192.168.0.23:22 -N centos@10.10.1.60 &
-        echo "SSH tunnel to Bastion host established."
-
-    - name: Verify SSH Tunnel to EC2
-      run: |
-        echo "Verifying SSH tunnel to EC2 instance..."
-        if ! ssh -o StrictHostKeyChecking=no -i /home/runner/deployment-scripts/INTERN-pem.pem centos@192.168.0.23 'exit'; then
-          echo "SSH tunnel to EC2 instance not established. Exiting."
-          exit 1
-        else
-          echo "SSH tunnel to EC2 instance established."
-        fi
-
-    - name: Deploy code
-      run: sudo /home/runner/deployment-scripts/deploy-code.sh
+        ssh -i /home/runner/deployment-scripts/INTERN-BASTION-1.pem -o StrictHostKeyChecking=no -L 22:192.168.0.23:22 -N Administrator@10.10.1.60 &
+        sleep 5
+        ssh -i /home/runner/deployment-scripts/INTERN-BASTION-1.pem -o StrictHostKeyChecking=no centos@192.168.0.23 'echo "SSH connection successful"'
