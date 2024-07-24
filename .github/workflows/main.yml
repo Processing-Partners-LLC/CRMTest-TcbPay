@@ -17,4 +17,4 @@ jobs:
         ssh -i /home/runner/deployment-scripts/INTERN-pem.pem -o StrictHostKeyChecking=no centos@192.168.0.23 'echo "SSH connection successful"'
 
     - name: Deploy code
-      run: sudo /home/runner/deployment-scripts/deploy-code.sh
+      run: /home/runner/deployment-scripts/deploy-code.sh
