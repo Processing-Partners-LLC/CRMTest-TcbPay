@@ -15,4 +15,4 @@ jobs:
 
     - name: SSH into EC2 instance 
       run: |
-        ssh -i /home/runner/deployment-scripts/INTERN-pem.pem -o StrictHostKeyChecking=no admin@192.168.0.23 'echo "SSH connection successful"'
+        ssh -i /home/runner/deployment-scripts/INTERN-pem.pem -o StrictHostKeyChecking=no centos@192.168.0.23 'echo "SSH connection successful"'
