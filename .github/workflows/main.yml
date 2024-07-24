@@ -17,4 +17,4 @@ jobs:
       run: |
         ssh -i /home/runner/deployment-scripts/INTERN-BASTION-1.pem -o StrictHostKeyChecking=no -L 22:192.168.0.23:22 -N Administrator@10.10.1.60 &
         sleep 5
-        ssh -i /home/runner/deployment-scripts/INTERN-BASTION-1.pem -o StrictHostKeyChecking=no centos@192.168.0.23 'echo "SSH connection successful"'
+        ssh -i /home/runner/deployment-scripts/INTERN-BASTION-1.pem -o StrictHostKeyChecking=no admin@192.168.0.23 'echo "SSH connection successful"'
