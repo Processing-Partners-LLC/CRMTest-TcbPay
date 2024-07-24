@@ -11,24 +11,7 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
-    - name: Run VPN connection script manually
-      run: |
-        echo "Please run the VPN connection script manually:"
-        echo "Run this command in your runner instance: sudo /home/runner/deployment-scripts/connect-vpn.sh"
-        read -p "Press Enter to continue after connecting VPN..."
     
-    - name: Verifying VPN connection to Bastion host
-      run: |
-        if ! ping -c 4 10.10.1.60 >/dev/null; then
-          echo "VPN connection to Bastion host not established. Exiting."
-          echo "Network information for debugging:"
-          ip addr show
-          ip route show
-          exit 1
-        else
-          echo "VPN connection to Bastion host established."
-        fi
 
     - name: SSH into EC2 instance through Bastion Host
       run: |
